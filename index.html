@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마기아 아카데미 - 아카이브</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Pretendard', 'Helvetica Neue', Arial, sans-serif; background: #0a0a0a; color: #e0e0e0; min-height: 100vh; padding: 0; line-height: 1.6; }
+        .main-nav { background: #000; border-bottom: 1px solid #333; padding: 0; position: sticky; top: 0; z-index: 100; }
+        .nav-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; }
+        .nav-logo { font-size: 1.5em; font-weight: 700; letter-spacing: 2px; color: #d4a373; text-transform: uppercase; }
+        .nav-tabs { display: flex; gap: 10px; flex-wrap: wrap; }
+        .nav-tab { padding: 10px 15px; cursor: pointer; border: none; background: none; color: #666; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; transition: all 0.3s ease; border-radius: 20px; font-weight: 600; }
+        .nav-tab:hover { color: #fff; background: #111; }
+        .nav-tab.active { color: #d4a373; background: #222; }
+        .tab-content { display: none; animation: fadeIn 0.5s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .container { max-width: 1200px; margin: 0 auto; padding: 60px 20px; }
+        h1 { text-align: center; color: #fff; margin-bottom: 60px; font-size: 3em; font-weight: 300; letter-spacing: 3px; text-transform: uppercase; }
+        h2.section-title { color: #d4a373; border-bottom: 1px solid #333; padding-bottom: 15px; margin: 60px 0 30px 0; font-weight: 300; letter-spacing: 2px; }
+        
+        .character-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 25px; margin-bottom: 40px; }
+        .character-card { background: #111; border: 1px solid #222; border-radius: 12px; overflow: hidden; cursor: pointer; transition: all 0.4s ease; display: flex; flex-direction: column; }
+        .character-card:hover { transform: translateY(-8px); border-color: #555; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        .character-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; filter: grayscale(50%); transition: filter 0.4s ease; }
+        .character-card:hover img { filter: grayscale(0%); }
+        .character-info { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
+        .character-name { font-size: 1.2em; font-weight: 700; margin-bottom: 5px; color: #fff; letter-spacing: 1px; }
+        .character-sub { font-size: 0.8em; color: #d4a373; margin-bottom: 10px; text-transform: uppercase; font-weight: bold; }
+        .character-brief { color: #888; line-height: 1.5; font-size: 0.85em; }
+        
+        .guide-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px; }
+        .region-card { background: #111; border: 1px solid #222; border-radius: 12px; overflow: hidden; transition: all 0.3s ease; padding: 25px; }
+        .region-card:hover { border-color: #555; transform: translateY(-5px); }
+        .region-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .region-title { color: #d4a373; font-size: 1.4em; font-weight: bold; }
+        .region-desc { color: #ccc; font-size: 0.95em; line-height: 1.6; }
+        
+        .guide-section { margin-bottom: 80px; }
+        .guide-title { font-size: 1.8em; color: #fff; margin-bottom: 30px; border-left: 4px solid #d4a373; padding-left: 20px; letter-spacing: 1px; }
+        .guide-card { background: #111; padding: 30px; border-radius: 12px; border: 1px solid #222; margin-bottom: 20px; }
+        .guide-card h3 { color: #d4a373; margin-bottom: 15px; font-size: 1.3em; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        
+        .rank-table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #111; border-radius: 8px; overflow: hidden; }
+        .rank-table th, .rank-table td { text-align: left; padding: 15px; border-bottom: 1px solid #222; }
+        .rank-table th { color: #d4a373; font-weight: bold; background: #1a1a1a; }
+        
+        /* Modal Styles */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); display: none; justify-content: center; align-items: center; z-index: 1000; opacity: 0; transition: opacity 0.3s ease; padding: 20px; }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        .modal-content { background: #0a0a0a; border: 1px solid #333; border-radius: 16px; max-width: 1000px; width: 100%; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; }
+        .modal-header { padding: 30px 40px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h2 { font-size: 2em; font-weight: 300; color: #fff; letter-spacing: 2px; }
+        .close-btn { font-size: 30px; cursor: pointer; color: #666; background: none; border: none; }
+        .close-btn:hover { color: #fff; }
+        
+        /* Modal Tabs */
+        .modal-tabs { display: flex; padding: 0 40px; border-bottom: 1px solid #222; background: #050505; gap: 10px; }
+        .modal-tab { padding: 15px 30px; cursor: pointer; border: none; background: none; color: #666; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; transition: all 0.3s ease; border-bottom: 2px solid transparent; }
+        .modal-tab:hover { color: #fff; }
+        .modal-tab.active { color: #fff; border-bottom-color: #d4a373; }
+        .modal-tab-content { display: none; padding: 40px; overflow-y: auto; max-height: calc(90vh - 140px); }
+        .modal-tab-content.active { display: block; }
+        
+        /* Details Tab Layout */
+        .details-layout { display: grid; grid-template-columns: 350px 1fr; gap: 40px; }
+        .standing-image-container { background: #111; border-radius: 12px; overflow: hidden; border: 1px solid #222; height: fit-content; }
+        .standing-image-container img { width: 100%; height: auto; display: block; }
+        .details-content { display: flex; flex-direction: column; gap: 20px; }
+        .info-row { display: flex; gap: 20px; }
+        .detail-item { padding-bottom: 15px; border-bottom: 1px solid #1a1a1a; flex: 1; }
+        .detail-label { font-weight: bold; color: #666; margin-bottom: 8px; font-size: 0.8em; text-transform: uppercase; letter-spacing: 1px; }
+        .detail-value { color: #e0e0e0; line-height: 1.6; font-size: 1.05em; }
+        .quote-value { color: #fff; font-style: italic; font-size: 1.1em; padding: 20px; background: #111; border-left: 3px solid #d4a373; border-radius: 0 8px 8px 0; margin-top: 10px; }
+        
+        /* Gallery Tab Layout */
+        .images-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 25px; }
+        .gallery-item { display: flex; flex-direction: column; gap: 15px; align-items: center; }
+        .gallery-item img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 12px; border: 1px solid #333; transition: transform 0.3s ease; }
+        .gallery-item img:hover { transform: scale(1.05); border-color: #d4a373; }
+        .gallery-label { color: #a8a8a8; font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
+
+        hr { border: none; border-top: 1px solid #222; margin: 60px 0 30px 0; }
+        .footer { text-align: right; color: #444; font-size: 0.85em; letter-spacing: 1px; }
+        
+        @media (max-width: 768px) {
+            .details-layout { grid-template-columns: 1fr; }
+            .nav-container { flex-direction: column; gap: 20px; padding: 20px; }
+            .rank-table th, .rank-table td { padding: 10px; font-size: 0.9em; }
+            .modal-tabs { padding: 0 20px; }
+            .modal-tab-content { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Navigation -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <div class="nav-logo">MAGIA ACADEMY</div>
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="switchMainTab('characters')">Characters</button>
+                <button class="nav-tab" onclick="switchMainTab('world')">World Lore</button>
+                <button class="nav-tab" onclick="switchMainTab('schedule')">Academic Schedule</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Characters Tab -->
+    <div id="charactersTab" class="tab-content active">
+        <div class="container">
+            <h1>Eternos Magia : Characters</h1>
+            
+            <h2 class="section-title">1st Year (신입생)</h2>
+            <div class="character-grid" id="year1Grid"></div>
+            
+            <h2 class="section-title">2nd Year (2학년)</h2>
+            <div class="character-grid" id="year2Grid"></div>
+
+            <h2 class="section-title">3rd Year (3학년)</h2>
+            <div class="character-grid" id="year3Grid"></div>
+
+            <h2 class="section-title">Professors (교수진)</h2>
+            <div class="character-grid" id="profGrid"></div>
+            
+            <hr>
+            <div class="footer">ARCHIVE: ETERNOS MAGIA ACADEMY</div>
+        </div>
+    </div>
+
+    <!-- World Tab -->
+    <div id="worldTab" class="tab-content">
+        <div class="container">
+            <h1>World Lore</h1>
+            
+            <div class="guide-section">
+                <h2 class="guide-title">MAGIC SYSTEM</h2>
+                <div class="guide-grid">
+                    <div class="guide-card">
+                        <h3>🔮 서클 (Circle) & 마나 코어</h3>
+                        <p>마법은 심장 부근의 <strong>'마나 코어'</strong>에서 생성된 마나를 혈관(회로)을 통해 방출하는 일련의 과정입니다. 마나를 압축해 코어 주위에 생성한 고리를 <strong>서클(Circle)</strong>이라 부르며, 1~9서클로 나뉩니다.<br><br>
+                        5서클이 졸업 요건이자 대륙 정식 마법사의 기준입니다. 단순 수련으로는 서클을 늘릴 수 없으며, 혈관이 찢어지는 <strong>'임계점(고통)'</strong>을 돌파해야만 성장합니다.</p>
+                    </div>
+                    <div class="guide-card">
+                        <h3>⚔️ 마법 전투 메커니즘</h3>
+                        <p>아카데미의 전투는 화력전이 아닌 <strong>'연산 속도와 회로 제어권 쟁탈전'</strong>입니다.<br><br>
+                        적이 마법을 연산할 때 저서클의 빠른 타격으로 안면이나 명치를 타격해 호흡을 끊고 수식을 붕괴시킵니다. 연산 중 혀를 깨물거나 간섭을 받으면 마나가 체내에서 역류해 장기가 파열되는 <strong>백파이어(마력 폭주)</strong>를 겪게 됩니다.</p>
+                    </div>
+                    <div class="guide-card">
+                        <h3>🩸 각인 (Innate)</h3>
+                        <p>혈통으로 계승되는 고귀하고 절대적인 선천적 권능입니다. 수식이나 영창이 필요 없으며 뇌에서 의도하는 즉시 발동됩니다. (예: 루미나의 빛, 베리디안의 생명 등)<br><br>
+                        더스트(평민) 출신은 원칙적으로 각인이 없으나, 돌연변이처럼 희귀한 이능을 각성하기도 합니다.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="guide-section">
+                <h2 class="guide-title">ACADEMY FACILITIES</h2>
+                <div class="guide-grid" id="facilityGrid">
+                    <div class="region-card">
+                        <div class="region-header">
+                            <div class="region-title">🏛️ 진리의 전당 (본관)</div>
+                        </div>
+                        <div class="region-desc">아카데미의 심장부. 강의실과 교수 연구실이 위치해 있습니다. 모든 벽면이 최고급 마력 흡수석으로 코팅되어 있어, 5서클 이하의 폭발은 흠집도 내지 못합니다. 치열한 수식 연산의 전장입니다.</div>
+                    </div>
+                    <div class="region-card">
+                        <div class="region-header">
+                            <div class="region-title">📚 심연의 도서관</div>
+                        </div>
+                        <div class="region-desc">대륙의 금서 및 고위 수식이 보관된 지하 구역입니다. 층이 아래로 내려갈수록 열람 조건이 가혹해지며, 끔찍한 살상 트랩과 골렘들이 침입자의 사지를 찢기 위해 배회하고 있습니다.</div>
+                    </div>
+                    <div class="region-card">
+                        <div class="region-header">
+                            <div class="region-title">🏰 기숙사 [라 파밀리아]</div>
+                        </div>
+                        <div class="region-desc">서열에 따라 철저히 분리된 계급제 기숙사입니다.<br>- <b>로얄 스위트(상위권)</b>: 마나 온천, 최고급 침대.<br>- <b>노말 룸(중위권)</b>: 평범한 1인 1실.<br>- <b>슬럼 배드(하위권)</b>: 곰팡이와 쥐가 들끓는 지하 배수구.</div>
+                    </div>
+                </div>
+            </div>
+            
+            <hr>
+            <div class="footer">ARCHIVE: ETERNOS MAGIA ACADEMY</div>
+        </div>
+    </div>
+
+    <!-- Schedule Tab -->
+    <div id="scheduleTab" class="tab-content">
+        <div class="container">
+            <h1>Academic Schedule</h1>
+
+            <div class="guide-section">
+                <h2 class="guide-title">DAILY ROUTINE (주간 표준 일과)</h2>
+                <div class="guide-card">
+                    <p style="font-size: 1.1em; color: #ccc;">
+                        <strong>[09:00 - 12:00]</strong> 전공/교양 공통 이론 수업<br>
+                        <strong>[12:00 - 13:00]</strong> 점심 식사 (서열별 배식 차등 적용)<br>
+                        <strong>[14:00 - 17:00]</strong> 전공 심화 및 실습 수업<br>
+                        <strong>[18:00 - ]</strong> 자율 수련 및 자유 시간<br>
+                        <br>
+                        <strong style="color: #4facfe;">[주말]</strong> 특수 구역(도서관, 온실 등) 출입 제한 해제. 북해 본토 외출은 허가제.
+                    </p>
+                </div>
+            </div>
+
+            <div class="guide-section">
+                <h2 class="guide-title">YEARLY CALENDAR (연간 학사일정)</h2>
+                <table class="rank-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 15%;">월 (Month)</th>
+                            <th>주요 학사 및 퀘스트 일정</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>3월</td><td>입학식 및 전공 결정 (3/2)<br>마나 코어 측정 & 신입생 랭킹전 (3/6)<br>시설 견학 및 튜토리얼 (3/20)</td></tr>
+                        <tr><td>4월</td><td>마나 폭주 대응 훈련 및 회로 수복 실습 (4/5)<br>수식 해킹/방어 모의전 (4/12)<br><strong>1학기 중간고사</strong> (마법이론·수식 필기) (4/20)</td></tr>
+                        <tr><td>5월</td><td><strong>에테르노스 마도제</strong> (사교 무도회) (5/5)<br>아이언피스트 주최 무투제 (5/15)<br>5대 명가 후계자 친선전 (5/25)</td></tr>
+                        <tr><td>6월</td><td>루미나 주최 추모 예배 (6/5)<br><strong>1학기 기말고사</strong> (수식 간섭 및 실기) (6/20)<br>전반기 서클 승급 심사 (6/25)</td></tr>
+                        <tr><td>7월</td><td>스톰본 주최 대륙 마탑 파견 실습 (7/2~7/5)<br>북해 해수욕장 생존 합숙 (7/15~7/18)</td></tr>
+                        <tr><td>8월</td><td>여름 방학 (비공식 각인 특훈 및 보충 수업 진행)</td></tr>
+                        <tr><td>9월</td><td>2학기 개강 (9/1)<br><strong>대마 투기대회</strong> (수식 붕괴 및 제어권 쟁탈전) (9/15)<br>고대 유적 발굴 및 토벌 (9/29)</td></tr>
+                        <tr><td>10월</td><td><strong>2학기 중간고사</strong> (조별 공성/수성 마법진 구축) (10/20)<br>블랙우드 주최 <strong>붉은 달의 밤</strong> (강령술 테마 가면 파티) (10/31)</td></tr>
+                        <tr><td>11월</td><td>차기 학생회장 선거 (11/5)<br>연말 결투제 (금지 마법 제외 무제한 토너먼트) (11/12)<br>베리디안 주최 영약/포션 축제 (11/20)</td></tr>
+                        <tr><td>12월</td><td><strong>2학기 기말고사</strong> (다중 마법 및 마나 한계 운용 평가) (12/20)<br>마설제(크리스마스) 무도회 (12/25)<br>최종 승급 심사 및 졸업 사정회 (12/30)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <hr>
+            <div class="footer">ARCHIVE: ETERNOS MAGIA ACADEMY</div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle"></h2>
+                <button class="close-btn" id="closeBtn">&times;</button>
+            </div>
+            
+            <!-- Modal Tabs -->
+            <div class="modal-tabs">
+                <button class="modal-tab active" onclick="switchModalTab('details')">Details</button>
+                <button class="modal-tab" onclick="switchModalTab('gallery')">Gallery</button>
+            </div>
+
+            <!-- Details Tab Content -->
+            <div id="modalDetailsTab" class="modal-tab-content active">
+                <div class="details-layout">
+                    <div class="standing-image-container">
+                        <img id="modalImg" src="" alt="캐릭터 전신">
+                    </div>
+                    <div class="details-content">
+                        <div class="info-row">
+                            <div class="detail-item">
+                                <div class="detail-label">House (가문)</div>
+                                <div class="detail-value" id="modalHouse" style="color:#d4a373; font-weight:bold;"></div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Circle (서클)</div>
+                                <div class="detail-value" id="modalCircle"></div>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                             <div class="detail-item">
+                                <div class="detail-label">Major (전공)</div>
+                                <div class="detail-value" id="modalMajor"></div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Element (주속성)</div>
+                                <div class="detail-value" id="modalElement"></div>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Innate / Skill (각인 및 능력)</div>
+                            <div class="detail-value" id="modalSkill" style="color: #4facfe;"></div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Personality (성향)</div>
+                            <div class="detail-value" id="modalPersonality"></div>
+                        </div>
+                        <div class="detail-item" style="border:none">
+                            <div class="detail-label">Quote (대사)</div>
+                            <div class="quote-value" id="modalQuote"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gallery Tab Content -->
+            <div id="modalGalleryTab" class="modal-tab-content">
+                <div class="images-grid" id="modalGalleryGrid">
+                    <!-- Javascript로 갤러리 이미지 주입 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const characters =[
+            { code: 'a1', group: 'year1', name: "카일렌", gender: "남성", circle: "4서클", element: "빛", house: "루미나", major: "마법전투학", personality: "오만함, 통제욕, 선민사상 (ENTJ)", skill: "[절대광휘] 시선이 닿는 즉시 대상의 망막과 마나 회로를 소각한다.", quote: "더스트의 바퀴벌레가 감히 태양의 영역에 발을 들이려 하다니. 역겹군." },
+            { code: 'a2', group: 'year1', name: "엘리나", gender: "여성", circle: "3서클", element: "물", house: "베리디안", major: "고위연금술", personality: "상냥함, 다정다감, 맹목적 의존 (ISFJ)", skill: "[에덴의 눈물] 타액과 눈물만으로 치명상을 즉시 재생시킨다.", quote: "다치지 않았어? 피가 나잖아, 내가 고쳐줄게." },
+            { code: 'a3', group: 'year1', name: "클로에", gender: "여성", circle: "3서클", element: "어둠", house: "블랙우드", major: "저주해독학", personality: "음침함, 과묵함, 스토킹 기질 (INTP)", skill: "[그림자 잠행] 타격 0.1초 전, 신체를 그림자로 치환해 회피한다.", quote: "네 피, 조금만 맛봐도 될까? 달콤한 냄새가 나..." },
+            { code: 'a4', group: 'year1', name: "릴리안", gender: "여성", circle: "2서클", element: "바람", house: "스톰본(방계)", major: "마법전투학", personality: "소심함, 울보, 의존적 (INFP)", skill: "[나비효과] 슬픔, 공포를 느끼면 주변에 7서클 급의 파괴적인 돌풍과 벼락을 일으킨다.", quote: "히익! 죄, 죄송해요! 일부러 날려버린 게 아니라... 흑..." },
+            { code: 'a5', group: 'year1', name: "세리아", gender: "여성", circle: "3서클", element: "불", house: "아이언피스트", major: "마도공학", personality: "허영심, 계산적, 츤데레 (ESTJ)", skill: "[황금률] 접촉한 마도구의 회로를 완벽히 꿰뚫어보고 초고속으로 해체/조립한다.", quote: "이 마도구가 얼마짜린 줄 알아? 흠집 나면 네 목숨으로 갚아야 할걸." },
+            { code: 'a6', group: 'year1', name: "티아", gender: "여성", circle: "2서클", element: "땅", house: "더스트", major: "마도공학", personality: "쾌활함, 장난기, 광기 어린 발명가 (ENTP)", skill: "[4차원 주머니] 아공간을 열어 예측 불가능한 기괴한 폭발물과 장비를 소환한다.", quote: "짜잔! 이번에 발명한 신형 폭탄이야! 한번 터뜨려볼까?!" },
+            { code: 'b1', group: 'year2', name: "아이리스", gender: "여성", circle: "4서클", element: "번개", house: "스톰본", major: "마법전투학", personality: "호탕함, 능글맞음, 스킨십 선호 (ESTP)", skill: "[스파크] 스킨십한 대상의 신경을 마비시키고 본인의 반사신경을 가속한다.", quote: "하하! 굼뜨긴. 내 스파크에 한 번 짜릿하게 마비되어 볼래?" },
+            { code: 'b2', group: 'year2', name: "플로라", gender: "여성", circle: "3서클", element: "독", house: "베리디안", major: "고위연금술", personality: "친절함, 우아함, 속이 시커멓다 (ENFJ)", skill: "[기생 포자] 상처 부위에 씨앗을 심어 상대의 마나를 빨아먹는 꽃을 피운다.", quote: "어머, 상처가 예쁘게 벌어졌네요. 그곳에 예쁜 꽃을 피워드릴게요." },
+            { code: 'b3', group: 'year2', name: "레이나", gender: "여성", circle: "4서클", element: "어둠", house: "블랙우드", major: "저주해독학", personality: "이성적, 냉혹함, 원리원칙주의 (ISTJ)", skill: "[침묵의 규율] 반경 10m 내의 소음을 지우고 3서클 이하의 영창을 원천 차단한다.", quote: "소란스럽습니다. 반경 내 모든 학생의 마법 영창을 통제합니다." },
+            { code: 'c1', group: 'year3', name: "비올레타", gender: "여성", circle: "5서클", element: "신체강화", house: "아이언피스트", major: "마법전투학", personality: "우직함, 열혈, 의리파 (ESFJ)", skill: "[금강불괴] 타격이 닿는 순간 체내 마나를 집중시켜 전신의 피부를 경화한다.", quote: "잔머리 굴릴 시간에 주먹을 한 번 더 뻗어라! 일어서!" },
+            { code: 'c2', group: 'year3', name: "다이애나", gender: "여성", circle: "5서클", element: "산", house: "블랙우드", major: "고위연금술", personality: "나른함, 위험함, 매드 사이언티스트 (INTJ)", skill: "[키메라] 신체 일부를 죽인 마수의 부위(맹독 촉수 등)로 변이시켜 공격한다.", quote: "후훗... 너의 그 특이한 신체 구조, 아주 좋은 실험체가 되겠어." },
+            { code: 'c3', group: 'year3', name: "스텔라", gender: "여성", circle: "5서클", element: "시간", house: "더스트", major: "마법전투학", personality: "고고함, 오만함, 완벽한 지배자 (ENTJ)", skill: "[찰나의 영원] 시야에 담은 대상의 시간 흐름을 완벽하게 '1초간' 정지시킨다.", quote: "내 시야 안에서, 허락 없이 네멋대로 시간을 쓰지 마라." },
+            { code: 'p1', group: 'prof', name: "알라릭", gender: "남성", circle: "8서클 (대마법사)", element: "공간, 시간", house: "더스트", major: "학장", personality: "속을 알 수 없음, 마이페이스, 엉뚱함 (ENTP)", skill: "[사상의 지평선] 반경 10m 내의 물리법칙과 인과율을 임의로 비튼다.", quote: "재밌는 쥐새끼가 한 마리 굴러들어왔군. 이번 랭킹전은 볼만하겠어." },
+            { code: 'p2', group: 'prof', name: "모티머", gender: "남성", circle: "7서클", element: "어둠, 강령", house: "블랙우드", major: "저주해독학", personality: "신경질적, 예민함, 독설가 (INTJ)", skill: "[망자의 메아리] 피와 시체에서 잔류 사념을 읽고 흑마법으로 부린다.", quote: "시체보다 못한 지능을 가지고 감히 내 수업을 듣겠다고?" },
+            { code: 'p3', group: 'prof', name: "솔라리스", gender: "여성", circle: "7서클", element: "빛, 성광", house: "루미나", major: "전투(이론)", personality: "엄격함, 완벽주의, 이단심문관 (ESTJ)", skill: "[진실의 눈] 대상을 주시해 거짓을 간파하고 즉각 마나 회로를 태워버린다.", quote: "거짓을 고하는 자의 회로는 그 자리에서 불태워버리겠다." },
+            { code: 'p4', group: 'prof', name: "실바누스", gender: "여성", circle: "6서클", element: "생명, 식물", house: "베리디안", major: "고위연금술", personality: "자애로움, 온화함, 지독한 모성애 (ISFJ)", skill: "[가이아의 입맞춤] 닿은 식물을 흉폭한 마수로 만들거나 영약으로 피워낸다.", quote: "가만히 계세요. 무리해서 움직이면 방금 이어붙인 혈관이 다시 터진답니다." },
+            { code: 'p5', group: 'prof', name: "모드레드", gender: "여성", circle: "7서클", element: "번개, 불", house: "스톰본", major: "전투(실기)", personality: "가학적, 전투광, 사디스트 (ESTP)", skill: "[역린] 자신이 입은 타격을 축적해 거대한 연쇄 번개로 뻥튀기하여 반사한다.", quote: "고통을 더 즐겨봐. 내가 입은 상처를 번개로 고스란히 돌려줄 테니까!" },
+            { code: 'p6', group: 'prof', name: "발레리아", gender: "여성", circle: "6서클", element: "금속, 땅", house: "아이언피스트", major: "마도공학", personality: "무심함, 귀차니즘, 장인정신 (ISTP)", skill: "[메탈 하트] 반경 내 모든 금속의 형태, 질량, 온도를 마음대로 조작한다.", quote: "귀찮게 굴면 이 망치로 네놈 머리를 부품 단위로 깨버린다." }
+        ];
+
+        // --- FUNCTIONS ---
+
+        // AD 도메인 이미지 URL 생성 (기본값 상황 1)
+        function getCharImageUrl(code, situation = 1) {
+            return `https://a.silou.workers.dev/AD/${code}/${situation}.webp`;
+        }
+
+        // 메인 탭 전환 로직
+        function switchMainTab(tabName) {
+            document.querySelectorAll('.main-nav .nav-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        }
+
+        // 모달 탭 전환 로직
+        function switchModalTab(tabName) {
+            document.querySelectorAll('.modal-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            document.querySelectorAll('.modal-tab-content').forEach(content => content.classList.remove('active'));
+            if (tabName === 'details') {
+                document.getElementById('modalDetailsTab').classList.add('active');
+            } else {
+                document.getElementById('modalGalleryTab').classList.add('active');
+            }
+        }
+
+        // 캐릭터 카드 생성
+        function createCharCard(char, index) {
+            const card = document.createElement('div');
+            card.className = 'character-card';
+            card.innerHTML = `
+                <img src="${getCharImageUrl(char.code, 1)}" alt="${char.name}" loading="lazy">
+                <div class="character-info">
+                    <div class="character-name">${char.name}</div>
+                    <div class="character-sub">${char.circle} | ${char.house}</div>
+                    <div class="character-brief">${char.skill}</div>
+                </div>
+            `;
+            card.onclick = () => openModal(index);
+            return card;
+        }
+
+        // 화면 렌더링
+        function renderAll() {
+            const groups = {
+                'year1': document.getElementById('year1Grid'),
+                'year2': document.getElementById('year2Grid'),
+                'year3': document.getElementById('year3Grid'),
+                'prof': document.getElementById('profGrid')
+            };
+
+            characters.forEach((char, idx) => {
+                if (groups[char.group]) {
+                    groups[char.group].appendChild(createCharCard(char, idx));
+                }
+            });
+        }
+
+        // 모달 제어
+        const modalOverlay = document.getElementById('modalOverlay');
+
+        function openModal(index) {
+            const char = characters[index];
+            document.getElementById('modalTitle').textContent = char.name;
+            
+            // Details Tab 업데이트
+            document.getElementById('modalImg').src = getCharImageUrl(char.code, 1);
+            document.getElementById('modalHouse').textContent = char.house;
+            document.getElementById('modalCircle').textContent = char.circle;
+            document.getElementById('modalMajor').textContent = char.major;
+            document.getElementById('modalElement').textContent = char.element;
+            document.getElementById('modalSkill').textContent = char.skill;
+            document.getElementById('modalPersonality').textContent = char.personality;
+            document.getElementById('modalQuote').textContent = `"${char.quote}"`;
+
+            // Gallery Tab 업데이트 (상황코드 1, 2, 21, 23)
+            const galleryCodes = [1, 2, 21, 23];
+            const galleryLabels =["웃음 (Smile)", "분노 (Anger)", "전투 (Combat)", "각인 (Innate)"];
+            const galleryGrid = document.getElementById('modalGalleryGrid');
+            
+            let galleryHTML = '';
+            galleryCodes.forEach((code, i) => {
+                galleryHTML += `
+                    <div class="gallery-item">
+                        <img src="${getCharImageUrl(char.code, code)}" alt="${char.name} ${galleryLabels[i]}" loading="lazy">
+                        <div class="gallery-label">${galleryLabels[i]}</div>
+                    </div>
+                `;
+            });
+            galleryGrid.innerHTML = galleryHTML;
+
+            // 모달 오픈 시 Details 탭을 기본으로 설정
+            document.querySelectorAll('.modal-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.modal-tab')[0].classList.add('active');
+            document.querySelectorAll('.modal-tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById('modalDetailsTab').classList.add('active');
+
+            modalOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            modalOverlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        document.getElementById('closeBtn').onclick = closeModal;
+        modalOverlay.onclick = (e) => {
+            if (e.target === modalOverlay) closeModal();
+        };
+
+        // 초기화
+        renderAll();
+    </script>
+</body>
+</html>
